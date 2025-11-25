@@ -46,7 +46,7 @@ def show(body):
     in_tag = False
     for c in body:
         if c == "<":
-            intag = True
+            in_tag = True
         elif c == ">":
             in_tag = False
         elif not in_tag:
