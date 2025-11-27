@@ -4,6 +4,7 @@ import tkinter
 
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
+SCROLL_STEP = 100
 
 class URL: 
     def __init__(self, url):
@@ -72,22 +73,23 @@ class Browser:
         )
         self.canvas.pack()
 
+        self.scroll = 0
+        self.window.bind("<Down>", self.scrolldown)
+
+    def draw(self):
+        self.canvas.delete("all")
+        for x, y, c in self.display_list:
+            self.canvas.create_text(x, y - self.scroll, text=c)
+
     def load(self, url):
         body = url.request()
         text = lex(body)
+        self.display_list = layout(text)
+        self.draw()
 
-        self.canvas.create_rectangle(10, 20, 400, 300)
-        self.canvas.create_oval(100, 100, 150, 150)
-        self.canvas.create_text(200, 150, text="Hi!")
-
-        cursor_x, cursor_y = HSTEP, VSTEP
-        for c in text:
-            self.canvas.create_text(cursor_x, cursor_y, text=c)
-            cursor_x += HSTEP
-
-            if cursor_x >= WIDTH - HSTEP:
-                cursor_y += VSTEP
-                cursor_x = HSTEP
+    def scrolldown(self, e):
+        self.scroll += SCROLL_STEP
+        self.draw()
     
 
 def lex(body):
@@ -101,6 +103,19 @@ def lex(body):
         elif not in_tag:
             text += c
     return text
+
+def layout(text):
+    display_list = []
+    cursor_x, cursor_y = HSTEP, VSTEP
+    for c in text:
+        display_list.append((cursor_x, cursor_y, c))
+        cursor_x += HSTEP
+
+        if cursor_x >= WIDTH - HSTEP:
+            cursor_y += VSTEP
+            cursor_x = HSTEP
+
+    return display_list
 
 if __name__ == "__main__":
     import sys
