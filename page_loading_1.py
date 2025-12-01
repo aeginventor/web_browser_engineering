@@ -86,7 +86,7 @@ class Browser:
 
     def load(self, url):
         body = url.request()
-        text = lex(body)
+        tokens = lex(body)
         self.display_list = Layout(tokens).display_list
         self.draw()
 
@@ -116,20 +116,7 @@ class Layout:
     def token(self, tok):
         if isinstance(tok, Text):
             for word in tok.text.split():
-                font = tkinter.font.Font(
-                    size=16,
-                    weight=weight,
-                    slant=style,
-                )
-                w = font.measure(word)
-                display_list.append((cursor_x, cursor_y, word))
-                cursor_x += w + font.measure(" ")
-
-                if cursor_x + w >= WIDTH - HSTEP:
-                    cursor_y += font.metrics("linespace") * 1.25
-                    cursor_x = HSTEP
-                
-                display_list.append((cursor_x, cursor_y, word, font))
+                word(word)
         elif tok.tag == "i":
             self.sytle = "italic"
             self.style = "italic"
@@ -140,16 +127,25 @@ class Layout:
         elif tok.tag == "/b":
             self.weight = "normal"
 
-        return display_list
+        return self.display_list
     
-def word(self, word):
-    font = tkinter.font.Font(
-        size=16,
-        weight=self.weight,
-        slant=self.style,
-    )
-    w = font.measure(word)
-    
+    def word(self, word):
+        font = tkinter.font.Font(
+            size=16,
+            weight=self.weight,
+            slant=self.style,
+        )
+        w = font.measure(word)
+        
+        self.display_list.append((cursor_x, cursor_y, word))
+        cursor_x += w + font.measure(" ")
+
+        if cursor_x + w >= WIDTH - HSTEP:
+            cursor_y += font.metrics("linespace") * 1.25
+            cursor_x = HSTEP
+        
+        self.display_list.append((cursor_x, cursor_y, word, font))
+
 
 def lex(body):
     out = []
