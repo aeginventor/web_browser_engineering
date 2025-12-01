@@ -151,9 +151,6 @@ def layout(tokens):
             weight = "bold"
         elif tok.tag == "/b":
             weight = "normal"
-
-
-
     return display_list
 
 if __name__ == "__main__":
