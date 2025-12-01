@@ -87,7 +87,7 @@ class Browser:
     def load(self, url):
         body = url.request()
         text = lex(body)
-        self.display_list = layout(text)
+        self.display_list = Layout(tokens).display_list
         self.draw()
 
     def scrolldown(self, e):
@@ -101,6 +101,54 @@ class Text:
 class Tag:
     def __init__(self, tag):
         self.tag = tag
+
+class Layout:
+    def __init__(self, tokens):
+        self.display_list = []
+        self.cursor_x = HSTEP
+        self.cursor_y = VSTEP
+        self.weight = "normal"
+        self.style = "roman"
+        
+        for tok in tokens:
+            self.token(tok)
+
+    def token(self, tok):
+        if isinstance(tok, Text):
+            for word in tok.text.split():
+                font = tkinter.font.Font(
+                    size=16,
+                    weight=weight,
+                    slant=style,
+                )
+                w = font.measure(word)
+                display_list.append((cursor_x, cursor_y, word))
+                cursor_x += w + font.measure(" ")
+
+                if cursor_x + w >= WIDTH - HSTEP:
+                    cursor_y += font.metrics("linespace") * 1.25
+                    cursor_x = HSTEP
+                
+                display_list.append((cursor_x, cursor_y, word, font))
+        elif tok.tag == "i":
+            self.sytle = "italic"
+            self.style = "italic"
+        elif tok.tag == "/i":
+            self.sytle = "roman"
+        elif tok.tag == "b":
+            self.weight = "bold"
+        elif tok.tag == "/b":
+            self.weight = "normal"
+
+        return display_list
+    
+def word(self, word):
+    font = tkinter.font.Font(
+        size=16,
+        weight=self.weight,
+        slant=self.style,
+    )
+    w = font.measure(word)
     
 
 def lex(body):
@@ -121,37 +169,6 @@ def lex(body):
     if not in_tag and buffer:
         out.append(Text(buffer))
     return out
-
-def layout(tokens):
-    font = tkinter.font.Font()
-    display_list = []
-    cursor_x, cursor_y = HSTEP, VSTEP
-    for tok in tokens:
-        if isinstance(tok, Text):
-            for word in tok.text.split():
-                font = tkinter.font.Font(
-                    size=16,
-                    weight=weight,
-                    slant=style,
-                )
-                w = font.measure(word)
-                display_list.append((cursor_x, cursor_y, word))
-                cursor_x += w + font.measure(" ")
-
-                if cursor_x + w >= WIDTH - HSTEP:
-                    cursor_y += font.metrics("linespace") * 1.25
-                    cursor_x = HSTEP
-                
-                display_list.append((cursor_x, cursor_y, word, font))
-        elif tok.tag == "i":
-            style = "italic"
-        elif tok.tag == "/i":
-            sytle = "roman"
-        elif tok.tag == "b":
-            weight = "bold"
-        elif tok.tag == "/b":
-            weight = "normal"
-    return display_list
 
 if __name__ == "__main__":
     import sys
