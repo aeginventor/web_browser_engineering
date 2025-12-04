@@ -112,9 +112,13 @@ class Layout:
         self.weight = "normal"
         self.style = "roman"
         self.size = 12
+
+        self.line = []
         
         for tok in tokens:
             self.token(tok)
+
+        self.flush()
 
     def token(self, tok):
         if isinstance(tok, Text):
@@ -136,6 +140,11 @@ class Layout:
             self.size += 4
         elif tok.tag == "/big":
             self.size -= 4
+        elif tok.tag == "br":
+            self.flush()
+        elif tok.tag == "/p":
+            self.flush()
+            self.cursor_y += VSTEP
 
         return self.display_list
     
@@ -150,10 +159,28 @@ class Layout:
         if self.cursor_x + w >= WIDTH - HSTEP:
             self.cursor_y += font.metrics("linespace") * 1.25
             self.cursor_x = HSTEP
+            self.flush()
 
-        self.display_list.append((self.cursor_x, self.cursor_y, word, font))
+        self.line.append((self.cursor_x, word, font))
 
         self.cursor_x += w + font.measure(" ")
+
+    def flush(self):
+        if not self.line: return
+        metrics = [font.metrics() for x, word, font in self.line]
+        max_ascent = max([metric["ascent"] for metric in metrics])
+
+        baseline = self.cursor_y + 1.25 * max_ascent
+
+        for x, word, font in self.line:
+            y = baseline - font.metrics("ascent")
+            self.display_list.append((x, y, word, font))
+
+        max_descent = max([metric["descent"] for metric in metrics])
+        self.cursor_y = baseline + 1.25 * max_descent
+
+        self.cursor_x = HSTEP
+        self.line = []
         
 
 def lex(body):
