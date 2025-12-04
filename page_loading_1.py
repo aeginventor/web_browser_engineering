@@ -77,19 +77,14 @@ class Browser:
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
 
-        self.bi_times = tkinter.font.Font(
-            family="Times",
-            size=16,
-            weight="bold",
-            slant="italic",
-        )
+        self.display_list = []
 
     def draw(self):
         self.canvas.delete("all")
-        for x, y, c in self.display_list:
+        for x, y, word, font in self.display_list:
             if y > self.scroll + HEIGHT: continue
-            if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y - self.scroll, text=c, anchor='nw')
+            if y + font.metrics("linespace") * 1.25 < self.scroll: continue
+            self.canvas.create_text(x, y - self.scroll, text=word, font=font, anchor='nw')
 
     def load(self, url):
         body = url.request()
@@ -124,11 +119,11 @@ class Layout:
     def token(self, tok):
         if isinstance(tok, Text):
             for word in tok.text.split():
-                word(word)
+                self.word(word)
         elif tok.tag == "i":
-            self.sytle = "italic"
+            self.style = "italic"
         elif tok.tag == "/i":
-            self.sytle = "roman"
+            self.style = "roman"
         elif tok.tag == "b":
             self.weight = "bold"
         elif tok.tag == "/b":
@@ -151,16 +146,15 @@ class Layout:
             slant=self.style,
         )
         w = font.measure(word)
-        
-        self.display_list.append((cursor_x, cursor_y, word, font))
-        cursor_x += w + font.measure(" ")
 
-        if cursor_x + w >= WIDTH - HSTEP:
-            cursor_y += font.metrics("linespace") * 1.25
-            cursor_x = HSTEP
-        
-        self.display_list.append((cursor_x, cursor_y, word, font))
+        if self.cursor_x + w >= WIDTH - HSTEP:
+            self.cursor_y += font.metrics("linespace") * 1.25
+            self.cursor_x = HSTEP
 
+        self.display_list.append((self.cursor_x, self.cursor_y, word, font))
+
+        self.cursor_x += w + font.measure(" ")
+        
 
 def lex(body):
     out = []
