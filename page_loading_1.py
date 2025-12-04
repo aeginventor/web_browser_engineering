@@ -77,6 +77,13 @@ class Browser:
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
 
+        self.bi_times = tkinter.font.Font(
+            family="Times",
+            size=16,
+            weight="bold",
+            slant="italic",
+        )
+
     def draw(self):
         self.canvas.delete("all")
         for x, y, c in self.display_list:
