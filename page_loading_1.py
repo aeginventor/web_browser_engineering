@@ -89,7 +89,7 @@ class Browser:
         for x, y, c in self.display_list:
             if y > self.scroll + HEIGHT: continue
             if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y - self.scroll, text=c)
+            self.canvas.create_text(x, y - self.scroll, text=c, anchor='nw')
 
     def load(self, url):
         body = url.request()
@@ -116,6 +116,7 @@ class Layout:
         self.cursor_y = VSTEP
         self.weight = "normal"
         self.style = "roman"
+        self.size = 12
         
         for tok in tokens:
             self.token(tok)
@@ -126,25 +127,32 @@ class Layout:
                 word(word)
         elif tok.tag == "i":
             self.sytle = "italic"
-            self.style = "italic"
         elif tok.tag == "/i":
             self.sytle = "roman"
         elif tok.tag == "b":
             self.weight = "bold"
         elif tok.tag == "/b":
             self.weight = "normal"
+        elif tok.tag == "small":
+            self.size -= 2
+        elif tok.tag == "/small":
+            self.size += 2
+        elif tok.tag == "big":
+            self.size += 4
+        elif tok.tag == "/big":
+            self.size -= 4
 
         return self.display_list
     
     def word(self, word):
         font = tkinter.font.Font(
-            size=16,
+            size=self.size,
             weight=self.weight,
             slant=self.style,
         )
         w = font.measure(word)
         
-        self.display_list.append((cursor_x, cursor_y, word))
+        self.display_list.append((cursor_x, cursor_y, word, font))
         cursor_x += w + font.measure(" ")
 
         if cursor_x + w >= WIDTH - HSTEP:
